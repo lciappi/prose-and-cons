@@ -20,3 +20,8 @@ secrets*.json
 .DS_Store
 .codex/
 .agents/
+node_modules/
+dist/
+.vercel/
+test-results/
+playwright-report/

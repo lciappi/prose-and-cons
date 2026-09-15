@@ -1,5 +1,6 @@
 const $ = (id) => document.getElementById(id);
-const token = document.querySelector('meta[name="folio-token"]').content;
+const token = document.querySelector('meta[name="folio-token"]')?.content;
+const runtime = window.folioRuntime;
 let activeJob = null;
 let importing = false;
 let modelReady = false;
@@ -9,6 +10,7 @@ let jobIsPreview = false;
 let sourceMode = 'pdf';
 
 async function api(path, options = {}) {
+  if (runtime) return runtime.api(path, options);
   const response = await fetch(path, { ...options, headers: { 'X-Folio-Token': token, ...options.headers } });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Something went wrong. Try again.');
@@ -30,6 +32,7 @@ function syncControls() {
   $('model-status').textContent = !modelReady ? 'Voice model unavailable. Restart with start.command.'
     : importing ? 'Reading PDF…'
     : busy ? (jobIsPreview ? 'Generating voice preview…' : 'Generating audio…')
+    : runtime ? 'Ready. First generation downloads the voice model.'
     : $('article').value.trim() ? 'Ready to generate audio.' : 'Add a PDF or text to get started.';
 }
 function updateCount() {
@@ -118,9 +121,9 @@ async function startJob(preview) {
   $('preview-player').pause(); $('player').pause();
   const text = preview ? 'This is a preview of the selected voice. You can adjust the reading speed before generating your audio.' : $('article').value;
   try {
-    const result = await api('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: $('voice').value, speed: Number($('speed').value), title: preview ? 'Voice preview' : ($('title').value.trim() || 'My article') }) });
+    const result = await api('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: $('voice').value, speed: Number($('speed').value), title: preview ? 'Voice preview' : ($('title').value.trim() || 'My article'), preview }) });
     activeJob = result.id;
-    sessionStorage.setItem('folio-job', JSON.stringify({ id: activeJob, preview }));
+    if (!runtime) sessionStorage.setItem('folio-job', JSON.stringify({ id: activeJob, preview }));
     $('progress-title').textContent = preview ? 'Generating voice preview' : 'Generating audio';
     $('progress-message').textContent = 'Loading voice…';
     $('progress').value = 0;
@@ -145,7 +148,7 @@ async function pollJob() {
     if (data.status === 'done') {
       const base = `/api/jobs/${activeJob}/audio`;
       if (jobIsPreview) {
-        $('preview-player').src = `${base}.wav`;
+        $('preview-player').src = runtime ? runtime.audioURL(activeJob, 'wav') : `${base}.wav`;
         $('preview-player').hidden = false;
         $('preview-player').play().catch(() => {});
       } else {
@@ -153,10 +156,12 @@ async function pollJob() {
         const duration = Math.round(data.duration);
         $('result-meta').textContent = `${data.voice} · ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')}`;
         const mp3 = data.formats.includes('mp3');
-        $('player').src = `${base}.${mp3 ? 'mp3' : 'wav'}`;
+        $('player').src = runtime ? runtime.audioURL(activeJob, mp3 ? 'mp3' : 'wav') : `${base}.${mp3 ? 'mp3' : 'wav'}`;
         $('download-mp3').hidden = !mp3;
-        $('download-mp3').href = `${base}.mp3?download=1`;
-        $('download-wav').href = `${base}.wav?download=1`;
+        for (const format of data.formats) {
+          $(`download-${format}`).href = runtime ? runtime.audioURL(activeJob, format) : `${base}.${format}?download=1`;
+          $(`download-${format}`).download = `${data.title.replace(/[^\p{L}\p{N} ._-]/gu, '').trim() || 'article'}.${format}`;
+        }
         $('result').hidden = false;
         $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -168,7 +173,7 @@ async function pollJob() {
   } catch (error) {
     // A disconnected tab must not unlock a still-running server job.
     showError(`Connection interrupted: ${error.message}`);
-    $('progress-message').textContent = 'Reconnecting… Keep the Terminal app running.';
+    $('progress-message').textContent = runtime ? 'Reconnecting… Keep this tab open.' : 'Reconnecting… Keep the Terminal app running.';
     pollTimer = setTimeout(async () => {
       try { await api(`/api/jobs/${activeJob}`); clearError(); pollJob(); }
       catch (retryError) {
@@ -190,7 +195,7 @@ $('cancel').onclick = async () => {
 async function initialize() {
   try {
     const status = await api('/api/status'); modelReady = status.ready;
-    const saved = JSON.parse(sessionStorage.getItem('folio-job') || 'null');
+    const saved = runtime ? null : JSON.parse(sessionStorage.getItem('folio-job') || 'null');
     if (saved && /^[a-f0-9]{32}$/.test(saved.id)) {
       activeJob = saved.id; jobIsPreview = Boolean(saved.preview);
       $('progress-panel').hidden = false; pollJob();
