@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4f1">
+  <title>Prose &amp; Cons — Text to speech</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/main.js"></script>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/"><img class="brand-logo" src="/logo.svg" width="42" height="42" alt=""><span>Prose <span class="brand-amp">&amp;</span> Cons</span></a></header>
+  <main>
+    <div class="page-heading"><h1>Text to speech</h1><p>Upload a PDF or paste text to create an audio file.</p></div>
+    <section class="studio" aria-label="Create audio">
+      <div class="source-panel">
+        <div class="section-heading"><h2><span class="step-number">1</span> Add your text</h2></div>
+        <div class="source-switch" role="group" aria-label="Input type">
+          <button class="tab active" id="pdf-tab" aria-pressed="true" aria-controls="pdf-source">Upload PDF</button>
+          <button class="tab" id="text-tab" aria-pressed="false" aria-controls="editor">Paste text</button>
+        </div>
+        <div id="pdf-source">
+          <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose a PDF">
+            <input type="file" id="pdf-file" accept="application/pdf,.pdf" hidden>
+            <svg class="upload-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M12 17v-6m-3 3 3-3 3 3"/></svg>
+            <strong id="upload-title">Choose a PDF or drag it here</strong>
+            <span id="upload-subtitle">Browse files</span>
+            <small>Text-based PDFs, up to 30 MB</small>
+          </label>
+          <details class="pdf-options"><summary>PDF reading order</summary><div class="layout-row"><label for="pdf-layout">Page layout</label><select id="pdf-layout"><option value="single">Single column</option><option value="two">Two columns</option></select></div></details>
+        </div>
+        <div id="editor" hidden>
+          <div class="editor-heading"><label for="article" id="editor-label">Review text</label><span id="page-count"></span></div>
+          <textarea id="article" maxlength="150000" placeholder="Paste or type the text you want to hear." spellcheck="false"></textarea>
+          <div class="editor-footer"><span id="word-count">0 words</span><span id="reading-time"></span></div>
+        </div>
+        <p id="extraction-note" class="notice" hidden></p>
+      </div>
+      <div class="voice-panel">
+        <div class="section-heading"><h2><span class="step-number">2</span> Choose a voice</h2></div>
+        <div class="settings-grid">
+          <div class="voice-setting">
+            <label for="voice" class="field-label">Voice <span>English</span></label>
+            <div class="voice-row">
+              <select id="voice"><option value="af_heart">Heart · American female</option><option value="af_bella">Bella · American female</option><option value="af_nicole">Nicole · American female</option><option value="am_michael">Michael · American male</option><option value="am_fenrir">Fenrir · American male</option><option value="bf_emma">Emma · British female</option><option value="bf_isabella">Isabella · British female</option><option value="bm_george">George · British male</option></select>
+              <button id="preview" class="secondary-button" disabled>Preview voice</button>
+            </div>
+            <audio id="preview-player" controls hidden aria-label="Voice preview"></audio>
+          </div>
+          <div class="speed-setting">
+            <div class="speed-heading"><label for="speed" class="field-label">Speed</label><output id="speed-value" for="speed">1.00×</output></div>
+            <input id="speed" type="range" min="0.75" max="1.5" value="1" step="0.05">
+            <div class="range-labels"><span>Slower</span><span>Faster</span></div>
+          </div>
+        </div>
+        <details class="audio-options"><summary>File name (optional)</summary><label class="field-label" for="title">File name</label><input id="title" type="text" maxlength="160" placeholder="My article"></details>
+      </div>
+      <div class="action-row"><p id="model-status" role="status">Add a PDF or text to get started.</p><button class="primary-button" id="generate" disabled>Generate audio</button></div>
+    </section>
+    <div id="error" class="error" role="alert" hidden></div>
+    <section id="progress-panel" class="progress-panel" aria-label="Generation progress" hidden>
+      <div class="progress-copy"><div><h2 id="progress-title">Generating audio</h2><p id="progress-message" role="status" aria-live="polite">Preparing audio…</p></div><button id="cancel" class="secondary-button">Cancel</button></div>
+      <progress id="progress" value="0" max="100" aria-label="Generation progress"></progress>
+      <p class="progress-hint">Keep this tab open until generation finishes. Download audio before leaving.</p>
+    </section>
+    <section id="result" class="result" aria-label="Generated audio" hidden>
+      <div class="result-heading"><h2 id="result-title">Your audio</h2><p id="result-meta"></p></div>
+      <audio id="player" controls preload="metadata" aria-label="Article narration"></audio>
+      <div class="download-row"><a id="download-mp3" class="secondary-button" href="#" download>Download MP3</a><a id="download-wav" class="secondary-button" href="#" download>Download WAV</a></div>
+    </section>
+    <footer>PDFs and text stay in your browser. First use downloads the Kokoro voice model (about 90 MB).</footer>
+  </main>
+</body>
+</html>

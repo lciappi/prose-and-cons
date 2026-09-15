@@ -1,0 +1,25 @@
+{
+  "name": "prose-and-cons",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/browser-runtime.test.js",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@breezystack/lamejs": "1.2.7",
+    "kokoro-js": "1.2.1",
+    "pdfjs-dist": "6.3.289"
+  },
+  "overrides": {
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "vite": "8.3.0"
+  }
+}

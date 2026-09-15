@@ -10,9 +10,48 @@
           [ PDF / TEXT ] ---> [ VOICE ] ---> [ MP3 / WAV ]
 ```
 
-A free, local PDF-to-speech app for your Mac, powered by Kokoro. Upload a PDF or paste text, choose an English voice, and generate an audio file. No account, API key, subscription, or per-character fees. Voices are **synthetic**; use the preview button to choose one you like.
+A PDF-to-speech app powered by Kokoro. Use the browser version hosted on Vercel, or run the original Mac app locally. Upload a PDF or paste text, choose an English voice, and generate MP3 / WAV audio. Voices are **synthetic**; use the preview button to choose one you like.
 
-## Open it
+## Deploy to Vercel
+
+The hosted version is a static Vite app: PDF extraction and Kokoro speech generation run in the browser. No Python function, speech server, API key, database, or environment variables are needed. Documents and text are not uploaded. Vercel hosting usage is subject to your plan.
+
+For an existing Vercel project connected to this repository, merge this change and deploy the resulting commit. Keep the project **Root Directory** at the repository root. `vercel.json` selects **Vite**, `npm ci`, `npm run build`, and the `dist` output directory, overriding framework/build settings from the earlier Flask deployment. Use Node.js **24.x** (also declared in `package.json`).
+
+The previous Flask deployment can build successfully but fail at invocation: `app.py` writes to a local output directory at import, trusts only localhost, and uses process-local tokens, background threads, jobs, and audio files. Vercel functions do not provide the persistent server/filesystem those operations require. Downloading the Python model alone does not solve these issues.
+
+Browser behavior:
+
+- The first preview or narration downloads roughly 90 MB of quantized Kokoro model data from Hugging Face, plus the browser runtime. Browser caching can reuse these files; internet access is needed when they are not cached. No model download happens during the Vercel build.
+- Speech runs in a Web Worker using WebAssembly. Use an up-to-date desktop browser; long articles take time and consume device memory. Cancel interrupts generation or model loading immediately; the next attempt reloads the worker.
+- PDFs remain limited to 30 MB / 150 pages and narration to 150,000 characters. Review extracted reading order. Scanned PDFs still require OCR first.
+- MP3 encoding runs in the browser; WAV remains available if MP3 encoding fails. Keep the tab open while generating, and download audio before refreshing or closing it. Audio and jobs are not persisted across page loads.
+- The latest article remains downloadable while previewing voices. A new completed article replaces the previous result.
+
+To develop or preview the hosted app locally (Node.js 24):
+
+```sh
+npm ci
+npm run dev
+# Production build and local preview:
+npm run build
+npm run preview
+```
+
+Validation:
+
+```sh
+npm test
+npx playwright install chromium
+npm run build
+npm run test:e2e
+# Optional real-model smoke test (downloads the model and generates WAV/MP3):
+TEST_REAL_SPEECH=1 npm run test:e2e
+```
+
+The default browser tests exercise PDF extraction and cancellation against the production build without requiring a model download. The optional smoke test checks real non-silent, decodable WAV and MP3 output. GitHub Actions runs the build and default tests on PRs.
+
+## Open the Mac app
 
 Install [uv](https://docs.astral.sh/uv/) if needed, then clone the repository:
 
@@ -39,7 +78,7 @@ For a terminal-only launch without opening a browser:
 .venv/bin/python app.py
 ```
 
-## Use it
+## Use the Mac app
 
 1. Choose **Upload PDF** or **Paste text**, then add your article.
 2. Review the text and remove anything you do not want read aloud. For journal articles, open **PDF reading order** and try **Two columns**; full-width titles may need correcting.
@@ -50,7 +89,7 @@ Eight English voices are included: Heart, Bella, Nicole, Michael, Fenrir, Emma, 
 
 Use the preview button to hear any voice. Generated audio and downloaded models are local files and are not included in the repository.
 
-## Practical details
+## Mac app practical details
 
 - PDF: selectable text, up to 30 MB / 150 pages; up to 150,000 characters per narration. For image-only/scanned PDFs, run free OCR first (for example, [OCRmyPDF](https://ocrmypdf.readthedocs.io/)), or paste recognized text. Complex layouts, math, citations, and tables may need editing.
 - Generation runs one job at a time on the CPU. Long articles can take minutes. Cancel stops after the current speech passage or encoding operation finishes.
@@ -58,7 +97,7 @@ Use the preview button to hear any voice. Generated audio and downloaded models 
 - All generated audio, including previews, stays in **output/** until you delete it. Job links last for the running server session (most recent 100 jobs). Saved audio survives restarts. The PDF itself and extracted text are not saved by the app. Refreshing may lose unsent editor changes; an active job can reconnect in the same tab.
 - The server binds only to `127.0.0.1`. There are no remote fonts, analytics, cloud speech calls, or document uploads to external servers. The Flask local server is intended for personal use on this computer, not public hosting.
 
-## Development
+## Mac app development
 
 Python 3.13 is used (`kokoro-onnx` currently requires Python <3.14).
 
@@ -80,6 +119,7 @@ Verified on this Mac: 20 automated checks; a real PDF uploaded through the local
 - [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M): Apache 2.0 model.
 - [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx): MIT runtime wrapper. Model files come from its official `model-files-v1.1` release.
 - Flask: BSD-3-Clause; pdfplumber: MIT; ONNX Runtime: MIT; SoundFile: BSD-3-Clause.
+- Browser version: kokoro-js, Transformers.js, PDF.js, and phonemizer (Apache 2.0), eSpeak NG (GPL-3.0), and @breezystack/lamejs (LGPL-3.0). Quantized model files come from [onnx-community/Kokoro-82M-v1.0-ONNX](https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX).
 - eSpeak NG (included through espeakng-loader) is used for pronunciation: GPL-3.0. FFmpeg is an optional external program with its own build-dependent license.
 - Fraunces and DM Sans fonts: SIL Open Font License 1.1. Bundled locally in `static/fonts/` with their license files; no external font requests.
 
