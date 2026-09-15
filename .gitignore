@@ -1,0 +1,22 @@
+.venv/
+.uv-cache/
+__pycache__/
+.pytest_cache/
+models/*
+output/*
+tmp/
+*.log
+
+# Local credentials, editor state, and runtime sessions must stay private.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.ses
+credentials*.json
+secrets*.json
+.DS_Store
+.codex/
+.agents/
