@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="folio-token" content="{{ token }}">
+  <meta name="theme-color" content="#ff794f">
+  <title>Prose &amp; Cons — Good words. Loud personality.</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='prose-1') }}">
+  <script defer src="{{ url_for('static', filename='app.js', v='prose-1') }}"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Prose and Cons home"><span class="brand-mark" aria-hidden="true">p<span>&amp;</span>c</span><span>prose <em>&amp;</em> cons<span class="brand-dot" aria-hidden="true">✳</span></span></a>
+    <div class="header-note"><span class="status-dot"></span> LOCAL VOICES. BIG PERSONALITY.</div>
+    <a class="header-link" href="#studio">LET’S LISTEN <span aria-hidden="true">↘</span></a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span aria-hidden="true">✳</span> FOR THE LOVE OF A GOOD LISTEN</p>
+        <h1>Big words.<br><span>Good vibes.</span></h1>
+        <p class="intro">Your reading list called. It wants a voice.<br>Turn PDFs &amp; text into your next great listen.</p>
+        <div class="benefits"><span>100% FREE</span><span>100% LOCAL</span><span>ZERO BORING VOICES*</span></div>
+        <p class="hero-footnote">*Okay, taste is subjective. Find your favorite below.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="record"><div class="record-label">P&amp;C<br><small>SIDE A</small></div></div>
+        <span class="art-star">✳</span>
+        <div class="price-sticker">ALL PROSE.<br>NO FEES.<strong>$0.00</strong></div>
+        <div class="cassette">
+          <div class="cassette-top"><span>P&amp;C AUDIO CLUB</span><span>VOL. 001 ↗</span></div>
+          <div class="cassette-label"><span class="tape-side">A</span><div><span>THE GOOD WORDS MIX</span><strong>Read it &amp; reap.</strong></div></div>
+          <div class="tape-window"><span class="reel"></span><span class="tape-middle"></span><span class="reel"></span></div>
+          <div class="cassette-bottom"><span>WORDS IN. VIBES OUT.</span><span>STEREO / ♫</span></div>
+          <div class="cassette-base"><i></i><i></i></div>
+        </div>
+        <div class="sound-card"><span class="sound-icon">♪</span><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="sound-play">▶</span></div>
+        <span class="art-caption">a little less scroll. a little more soul.</span>
+      </div>
+    </section>
+
+    <div class="studio-banner"><span>THE LISTENING LAB</span><span class="banner-decoration" aria-hidden="true">✳ &nbsp; PDF → VOICE → VIBES &nbsp; ✳</span><span>YOUR NEXT MIX STARTS HERE ↙</span></div>
+    <section class="studio" id="studio" aria-label="Create your narration">
+      <div class="source-panel">
+        <div class="section-heading"><div><span class="step">01</span><h2>Drop the words.</h2></div><span class="small-label">THE SOURCE MATERIAL</span></div>
+        <div class="tabs" role="tablist" aria-label="Article source">
+          <button class="tab active" id="pdf-tab" role="tab" aria-selected="true" aria-controls="pdf-source">Upload a PDF</button>
+          <button class="tab" id="text-tab" role="tab" aria-selected="false" aria-controls="text-source">Paste text</button>
+        </div>
+        <div id="pdf-source" role="tabpanel" aria-labelledby="pdf-tab">
+          <label class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Choose a PDF article">
+            <input type="file" id="pdf-file" accept="application/pdf,.pdf" hidden>
+            <span class="upload-icon" aria-hidden="true">↙</span>
+            <strong id="upload-title">Drop it like it’s prose.</strong>
+            <span id="upload-subtitle">or <u>browse your files</u></span>
+            <small>Text-based PDF · Up to 30 MB / 150 pages</small>
+          </label>
+          <div class="layout-row"><label for="pdf-layout">Reading order</label><select id="pdf-layout"><option value="single">Single column</option><option value="two">Two columns (research papers)</option></select></div>
+        </div>
+        <div id="text-source" role="tabpanel" aria-labelledby="text-tab" hidden><p class="source-help">An essay? A rabbit hole? That article you’ve had open for three weeks? Paste it below. We’ll do the talking.</p></div>
+        <div class="editor-heading"><label for="article">The good stuff <span id="page-count"></span></label><button class="text-button" id="sample">Take a test drive ↗</button></div>
+        <textarea id="article" maxlength="150000" placeholder="Your words go here. Edit the text, ditch the footnotes, keep the good stuff. This is your mix." spellcheck="false"></textarea>
+        <div class="editor-footer"><span id="word-count">0 words</span><span id="reading-time">Ready when you are</span></div>
+        <p id="extraction-note" class="notice" hidden></p>
+      </div>
+
+      <aside class="voice-panel">
+        <div class="section-heading"><div><span class="step">02</span><h2>Pick your player.</h2></div><span class="panel-star" aria-hidden="true">✳</span></div>
+        <div class="field-heading"><label for="voice">THE VOICE</label><span class="pill">8 VOICES / ENGLISH</span></div>
+        <select id="voice">
+        {% for voice in voices %}<option value="{{ voice.id }}" data-description="{{ voice.description }}" data-accent="{{ voice.accent }}" data-gender="{{ voice.gender }}">{{ voice.name }} · {{ voice.accent }} {{ voice.gender | lower }}</option>{% endfor %}
+        </select>
+        <div class="voice-detail"><span class="voice-avatar" id="voice-avatar">H</span><div><strong id="voice-description">Warm &amp; expressive</strong><span id="voice-accent">American · Female</span></div><button id="preview" class="preview-button" aria-label="Preview selected voice" title="Preview selected voice">▶</button></div>
+        <audio id="preview-player" controls hidden aria-label="Voice preview"></audio>
+        <div class="speed-heading"><label for="speed">SET THE TEMPO</label><output id="speed-value" for="speed">1.00×</output></div>
+        <input id="speed" type="range" min="0.75" max="1.5" value="1" step="0.05">
+        <div class="range-labels"><span>Sunday stroll</span><span>Places to be ↗</span></div>
+        <div class="divider"></div>
+        <label class="title-label" for="title">NAME YOUR MIX <span>(optional)</span></label>
+        <input id="title" type="text" maxlength="160" placeholder="The extremely good listening mix">
+        <button class="primary-button" id="generate" disabled><span>Give it a voice</span><span aria-hidden="true">↗</span></button>
+        <p class="button-note" id="model-status">PDF TO AUDIO. NO SUBSCRIPTION REQUIRED.</p>
+        <div class="privacy-note"><span aria-hidden="true">☺</span><p>Your files stay on your Mac.<br>No accounts. No credits. Just press go.</p><span class="private-stamp">KEEP<br>IT LOCAL</span></div>
+      </aside>
+    </section>
+
+    <div id="error" class="error" role="alert" hidden></div>
+    <section id="progress-panel" class="progress-panel" aria-label="Narration progress" hidden>
+      <div class="progress-copy"><span class="spinning-note" aria-hidden="true">♫</span><div><strong id="progress-title">Finding the rhythm…</strong><p id="progress-message" role="status" aria-live="polite">Preparing your narration</p></div><button id="cancel" class="text-button">Cancel</button></div>
+      <progress id="progress" value="0" max="100" aria-label="Narration progress"></progress>
+      <p class="progress-hint">Long articles can take a few minutes. Keep this app running while your audio is made.</p>
+    </section>
+
+    <section id="result" class="result" aria-label="Your audio" hidden>
+      <div class="result-heading"><span class="result-icon" aria-hidden="true">♫</span><div><p class="eyebrow">FRESH OUT OF THE LISTENING LAB</p><h2 id="result-title">Your mix is ready.</h2><p id="result-meta"></p></div></div>
+      <audio id="player" controls preload="metadata" aria-label="Article narration"></audio>
+      <div class="download-row"><span>Good words travel well.</span><div><a id="download-mp3" class="download" href="#" download>Download MP3 ↓</a><a id="download-wav" class="text-button" href="#" download>WAV ↓</a></div></div>
+    </section>
+    <footer><span class="footer-brand">prose &amp; cons <span>✳</span> ALL EARS. ALL YOURS.</span><span>Powered by Kokoro · Free, open-source synthetic voices</span></footer>
+  </main>
+</body>
+</html>
