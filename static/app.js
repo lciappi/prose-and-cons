@@ -6,6 +6,7 @@ let modelReady = false;
 let lastFile = null;
 let pollTimer = null;
 let jobIsPreview = false;
+let sourceMode = 'pdf';
 
 async function api(path, options = {}) {
   const response = await fetch(path, { ...options, headers: { 'X-Folio-Token': token, ...options.headers } });
@@ -23,19 +24,30 @@ function syncControls() {
   $('speed').disabled = busy;
   $('pdf-file').disabled = importing;
   $('pdf-layout').disabled = importing;
+  $('pdf-tab').disabled = importing;
+  $('text-tab').disabled = importing;
+  $('article').disabled = importing;
+  $('model-status').textContent = !modelReady ? 'Voice model unavailable. Restart with start.command.'
+    : importing ? 'Reading PDF…'
+    : busy ? (jobIsPreview ? 'Generating voice preview…' : 'Generating audio…')
+    : $('article').value.trim() ? 'Ready to generate audio.' : 'Add a PDF or text to get started.';
 }
 function updateCount() {
   const words = $('article').value.trim().split(/\s+/).filter(Boolean).length;
   $('word-count').textContent = `${words.toLocaleString()} words`;
-  $('reading-time').textContent = words ? `About ${Math.max(1, Math.round(words / (155 * Number($('speed').value))))} min of listening` : 'Ready when you are';
+  $('reading-time').textContent = words ? `About ${Math.max(1, Math.round(words / (155 * Number($('speed').value))))} min of audio` : '';
+  $('editor').hidden = sourceMode === 'pdf' && !words && !$('dropzone').classList.contains('has-file');
   syncControls();
 }
 function selectTab(mode) {
+  sourceMode = mode;
   for (const name of ['pdf', 'text']) {
     $(name + '-tab').classList.toggle('active', name === mode);
-    $(name + '-tab').setAttribute('aria-selected', String(name === mode));
-    $(name + '-source').hidden = name !== mode;
+    $(name + '-tab').setAttribute('aria-pressed', String(name === mode));
   }
+  $('pdf-source').hidden = mode !== 'pdf';
+  $('editor-label').textContent = mode === 'pdf' ? 'Review text' : 'Text';
+  updateCount();
 }
 $('pdf-tab').onclick = () => selectTab('pdf');
 $('text-tab').onclick = () => { selectTab('text'); $('article').focus(); };
@@ -49,10 +61,6 @@ for (const id of ['pdf-tab', 'text-tab']) $(id).onkeydown = (event) => {
 $('article').addEventListener('input', updateCount);
 $('speed').addEventListener('input', () => { $('speed-value').textContent = `${Number($('speed').value).toFixed(2)}×`; updateCount(); });
 $('voice').onchange = () => {
-  const option = $('voice').selectedOptions[0];
-  $('voice-avatar').textContent = option.textContent[0];
-  $('voice-description').textContent = option.dataset.description;
-  $('voice-accent').textContent = `${option.dataset.accent} · ${option.dataset.gender}`;
   $('preview-player').pause(); $('preview-player').hidden = true;
 };
 
@@ -67,23 +75,24 @@ async function importPDF(file) {
   syncControls();
   selectTab('pdf');
   $('dropzone').classList.add('busy');
-  $('upload-title').textContent = 'Opening your article…';
-  $('upload-subtitle').textContent = 'Extracting text on your device';
+  $('upload-title').textContent = 'Reading PDF…';
+  $('upload-subtitle').textContent = 'Extracting text';
   const form = new FormData();
   form.append('file', file); form.append('layout', $('pdf-layout').value);
   try {
     const data = await api('/api/extract', { method: 'POST', body: form });
     $('article').value = data.text;
     $('title').value = data.title.slice(0, 160);
-    $('page-count').textContent = `· ${data.pages} page${data.pages === 1 ? '' : 's'}`;
+    $('page-count').textContent = `${data.pages} page${data.pages === 1 ? '' : 's'}`;
     $('upload-title').textContent = file.name;
-    $('upload-subtitle').textContent = 'Ready to read · Click to choose another';
+    $('upload-subtitle').textContent = 'Choose a different PDF';
+    $('dropzone').classList.add('has-file');
     $('extraction-note').textContent = data.warnings.join(' ');
     $('extraction-note').hidden = !data.warnings.length;
   } catch (error) {
     showError(error.message);
     $('upload-title').textContent = 'Try another PDF';
-    $('upload-subtitle').textContent = 'Click to browse your files';
+    $('upload-subtitle').textContent = 'Browse files';
   } finally {
     importing = false;
     $('dropzone').classList.remove('busy');
@@ -100,16 +109,6 @@ $('dropzone').addEventListener('drop', (event) => importPDF(event.dataTransfer.f
 window.addEventListener('dragover', (event) => event.preventDefault());
 window.addEventListener('drop', (event) => event.preventDefault());
 
-$('sample').onclick = () => {
-  if ($('article').value.trim() && !window.confirm('Replace the text in the editor with the example?')) return;
-  selectTab('text');
-  $('article').value = 'The art of paying attention\n\nThere is a particular kind of quiet that arrives when we put down a screen and step outside. The world has been carrying on all this time: leaves turning toward the light, a conversation drifting from an open window, the small, steady rhythm of our own footsteps.\n\nAttention is a way of making the ordinary feel new again. We do not need to travel far to find something worth noticing. Sometimes, all it takes is a good story, a beautiful voice, and a little room to listen.';
-  $('title').value = 'The art of paying attention';
-  $('page-count').textContent = '';
-  $('extraction-note').hidden = true;
-  updateCount();
-};
-
 async function startJob(preview) {
   if (activeJob) return;
   clearError();
@@ -117,13 +116,13 @@ async function startJob(preview) {
   activeJob = 'starting'; jobIsPreview = preview;
   syncControls();
   $('preview-player').pause(); $('player').pause();
-  const text = preview ? 'A good story can change the way you see the world. Take a breath, settle in, and let me do the reading.' : $('article').value;
+  const text = preview ? 'This is a preview of the selected voice. You can adjust the reading speed before generating your audio.' : $('article').value;
   try {
     const result = await api('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, voice: $('voice').value, speed: Number($('speed').value), title: preview ? 'Voice preview' : ($('title').value.trim() || 'My article') }) });
     activeJob = result.id;
     sessionStorage.setItem('folio-job', JSON.stringify({ id: activeJob, preview }));
-    $('progress-title').textContent = preview ? 'Meet your voice' : 'Finding the rhythm…';
-    $('progress-message').textContent = 'Warming up your voice…';
+    $('progress-title').textContent = preview ? 'Generating voice preview' : 'Generating audio';
+    $('progress-message').textContent = 'Loading voice…';
     $('progress').value = 0;
     $('cancel').disabled = false; $('cancel').textContent = 'Cancel';
     $('progress-panel').hidden = false;
@@ -152,7 +151,7 @@ async function pollJob() {
       } else {
         $('result-title').textContent = data.title;
         const duration = Math.round(data.duration);
-        $('result-meta').textContent = `${data.voice} · ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')} · Made locally, yours to keep`;
+        $('result-meta').textContent = `${data.voice} · ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')}`;
         const mp3 = data.formats.includes('mp3');
         $('player').src = `${base}.${mp3 ? 'mp3' : 'wav'}`;
         $('download-mp3').hidden = !mp3;
@@ -181,13 +180,6 @@ async function pollJob() {
 }
 $('preview').onclick = () => startJob(true);
 $('generate').onclick = () => startJob(false);
-// Let the artwork follow real playback, including native audio controls.
-function syncPlayback() {
-  document.body.classList.toggle('is-playing', ['player', 'preview-player'].some((id) => !$(id).paused && !$(id).ended));
-}
-for (const id of ['player', 'preview-player']) {
-  for (const event of ['playing', 'pause', 'ended', 'emptied']) $(id).addEventListener(event, syncPlayback);
-}
 $('cancel').onclick = async () => {
   if (!activeJob || activeJob === 'starting') return;
   $('cancel').disabled = true; $('cancel').textContent = 'Cancelling…';
@@ -198,7 +190,6 @@ $('cancel').onclick = async () => {
 async function initialize() {
   try {
     const status = await api('/api/status'); modelReady = status.ready;
-    if (!status.ready) $('model-status').textContent = 'Run start.command to download the free voice model.';
     const saved = JSON.parse(sessionStorage.getItem('folio-job') || 'null');
     if (saved && /^[a-f0-9]{32}$/.test(saved.id)) {
       activeJob = saved.id; jobIsPreview = Boolean(saved.preview);
