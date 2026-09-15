@@ -1,6 +1,6 @@
 # Bundled fonts
 
-Fraunces and DM Sans are served by this app, without requests to an external font service. Both are licensed under the SIL Open Font License 1.1; their unmodified license texts are included alongside the fonts.
+Fraunces and DM Sans are served by this app, without requests to an external font service. Both are licensed under the SIL Open Font License 1.1; their license texts are included alongside the fonts.
 
 Original variable font files from the Google Fonts repository:
 
