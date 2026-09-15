@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="folio-token" content="{{ token }}">
-  <meta name="theme-color" content="#f5f6f8">
+  <meta name="theme-color" content="#f6f4f1">
   <title>Prose &amp; Cons — Text to speech</title>
-  <link rel="icon" href="{{ url_for('static', filename='favicon.svg', v='simple-1') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='simple-1') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg', v='balanced-1') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='balanced-1') }}">
   <script defer src="{{ url_for('static', filename='app.js', v='simple-1') }}"></script>
 </head>
 <body>
-  <header class="site-header"><a class="brand" href="/">Prose &amp; Cons</a><span>Free &amp; local</span></header>
+  <header class="site-header"><a class="brand" href="/"><img class="brand-logo" src="{{ url_for('static', filename='logo.svg') }}" width="42" height="42" alt=""><span>Prose <span class="brand-amp">&amp;</span> Cons</span></a><span>Free &amp; local</span></header>
   <main>
     <div class="page-heading"><h1>Text to speech</h1><p>Upload a PDF or paste text to create an audio file.</p></div>
     <section class="studio" aria-label="Create audio">
       <div class="source-panel">
-        <div class="section-heading"><h2>1. Add your text</h2></div>
+        <div class="section-heading"><h2><span class="step-number">1</span> Add your text</h2></div>
         <div class="source-switch" role="group" aria-label="Input type">
           <button class="tab active" id="pdf-tab" aria-pressed="true" aria-controls="pdf-source">Upload PDF</button>
           <button class="tab" id="text-tab" aria-pressed="false" aria-controls="editor">Paste text</button>
@@ -39,7 +39,7 @@
         <p id="extraction-note" class="notice" hidden></p>
       </div>
       <div class="voice-panel">
-        <div class="section-heading"><h2>2. Choose a voice</h2></div>
+        <div class="section-heading"><h2><span class="step-number">2</span> Choose a voice</h2></div>
         <div class="settings-grid">
           <div class="voice-setting">
             <label for="voice" class="field-label">Voice <span>English</span></label>
