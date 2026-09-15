@@ -1,5 +1,15 @@
 # Prose & Cons
 
+```text
+    ____                        ___       ______
+   / __ \_________  ________   ( _ )     / ____/___  ____  _____
+  / /_/ / ___/ __ \/ ___/ _ \ / __ \/|  / /   / __ \/ __ \/ ___/
+ / ____/ /  / /_/ (__  )  __// /_/  <  / /___/ /_/ / / / (__  )
+/_/   /_/   \____/____/\___/ \____/\/  \____/\____/_/ /_/____/
+
+          [ PDF / TEXT ] ---> [ VOICE ] ---> [ MP3 / WAV ]
+```
+
 A free, local PDF-to-speech app for your Mac, powered by Kokoro. Upload a PDF or paste text, choose an English voice, and generate an audio file. No account, API key, subscription, or per-character fees. Voices are **synthetic**; use the preview button to choose one you like.
 
 ## Open it
