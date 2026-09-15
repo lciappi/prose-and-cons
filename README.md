@@ -71,5 +71,6 @@ Verified on this Mac: 20 automated checks; a real PDF uploaded through the local
 - [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx): MIT runtime wrapper. Model files come from its official `model-files-v1.1` release.
 - Flask: BSD-3-Clause; pdfplumber: MIT; ONNX Runtime: MIT; SoundFile: BSD-3-Clause.
 - eSpeak NG (included through espeakng-loader) is used for pronunciation: GPL-3.0. FFmpeg is an optional external program with its own build-dependent license.
+- Fraunces and DM Sans fonts: SIL Open Font License 1.1. Bundled locally in `static/fonts/` with their license files; no external font requests.
 
 These tools and model weights are available without usage fees. See their upstream licenses before redistributing a bundled app.
