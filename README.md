@@ -1,6 +1,6 @@
 # Prose & Cons
 
-A free, local PDF-to-speech app for your Mac, powered by Kokoro, with a colorful retro mixtape interface. Natural-sounding **synthetic** voices, no account, API key, subscription, or per-character fees. Voice quality is subjective: use the preview button to choose a voice you like.
+A free, local PDF-to-speech app for your Mac, powered by Kokoro. Upload a PDF or paste text, choose an English voice, and generate an audio file. No account, API key, subscription, or per-character fees. Voices are **synthetic**; use the preview button to choose one you like.
 
 ## Open it
 
@@ -31,10 +31,10 @@ For a terminal-only launch without opening a browser:
 
 ## Use it
 
-1. Drop in a PDF, paste text, or click **Take a test drive**.
-2. Review the extracted text. Remove references or headers you do not want read aloud. Try **Two columns** for journal articles; full-width titles may need correcting.
-3. Choose a voice. Click its play button for a short sample; adjust the pace.
-4. Click **Give it a voice**. Play the result or download WAV / MP3.
+1. Choose **Upload PDF** or **Paste text**, then add your article.
+2. Review the text and remove anything you do not want read aloud. For journal articles, open **PDF reading order** and try **Two columns**; full-width titles may need correcting.
+3. Choose a voice and click **Preview voice** to listen to a sample. Adjust the speed if needed.
+4. Click **Generate audio**. Play the result or download MP3 / WAV. You can set a download name under **File name (optional)** before generating.
 
 Eight English voices are included: Heart, Bella, Nicole, Michael, Fenrir, Emma, Isabella, and George. American and British accents; female and male voices. Heart is the default.
 
@@ -56,7 +56,7 @@ Python 3.13 is used (`kokoro-onnx` currently requires Python <3.14).
 UV_CACHE_DIR="$PWD/.uv-cache" uv venv --python 3.13 .venv
 UV_CACHE_DIR="$PWD/.uv-cache" uv pip install --python .venv/bin/python -r requirements.txt
 UV_CACHE_DIR="$PWD/.uv-cache" uv pip install --python .venv/bin/python pytest
-.venv/bin/python -m pytest -q
+.venv/bin/python -m pytest -q tests
 ```
 
 Unit tests do not need model downloads. They mock speech synthesis; actual listening previews require the model files.
