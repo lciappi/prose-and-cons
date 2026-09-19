@@ -18,6 +18,8 @@ The hosted version is a static Vite app: PDF extraction and Kokoro speech genera
 
 For an existing Vercel project connected to this repository, merge this change and deploy the resulting commit. Keep the project **Root Directory** at the repository root. `vercel.json` selects **Vite**, `npm ci`, `npm run build`, and the `dist` output directory, overriding framework/build settings from the earlier Flask deployment. Use Node.js **24.x** (also declared in `package.json`).
 
+The hosted app includes Vercel Web Analytics for page views. Enable **Web Analytics** in the Vercel project's **Analytics** tab, then deploy this version to start collecting visits. No API key or environment variables are required. The integration does not send document contents, pasted text, or generated audio as analytics events.
+
 The previous Flask deployment can build successfully but fail at invocation: `app.py` writes to a local output directory at import, trusts only localhost, and uses process-local tokens, background threads, jobs, and audio files. Vercel functions do not provide the persistent server/filesystem those operations require. Downloading the Python model alone does not solve these issues.
 
 Browser behavior:

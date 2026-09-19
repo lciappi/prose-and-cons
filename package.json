@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@breezystack/lamejs": "1.2.7",
+    "@vercel/analytics": "2.0.1",
     "kokoro-js": "1.2.1",
     "pdfjs-dist": "6.3.289"
   },
